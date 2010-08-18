@@ -1,0 +1,38 @@
+#!/bin/bash
+#set -xv 
+DAEMON=/usr/local/bin/ipmicontrol.sh 
+NAME=ipmicontrol
+DESC="IPMI Control"
+
+test -x $DAEMON || exit 0
+
+PID=`ps -fea | grep ipmicontrol|head -1| gawk '{print $2}'`
+
+set -e
+
+case "$1" in
+start)
+     echo -n "Iniciant $DESC: $NAME"
+     start-stop-daemon -b --start --quiet --pidfile /var/run/ipmicontrol.pid --exec $DAEMON
+     ps -fea | grep ipmicontrol |tail -1| gawk '{print $2}' > /var/run/ipmicontrol.pid 
+     echo "."
+    ;;
+stop)
+    echo -n "Aturant $DESC: ipmicontrol"
+    start-stop-daemon --stop --quiet --pidfile /var/run/ipmicontrol.pid 
+#    start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/ipmicontrol.pid
+    #kill $PID 
+    echo "."
+    ;;
+restart)
+    $0 stop
+    $0 start
+    ;;
+*)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+    ;;
+
+esac
+
+exit 0
